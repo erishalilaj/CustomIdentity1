@@ -2,6 +2,7 @@ using System.Diagnostics;
 using AspNetCoreGeneratedDocument;
 using CustomIdentity.Models;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 
 namespace CustomIdentity.Controllers
@@ -21,6 +22,7 @@ namespace CustomIdentity.Controllers
             return View();
         }
 
+        [AllowAnonymous]
         public IActionResult Privacy()
         {
             return View();

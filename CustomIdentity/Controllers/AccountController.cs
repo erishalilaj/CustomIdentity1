@@ -1,79 +1,108 @@
 ﻿using AspNetCoreGeneratedDocument;
 using CustomIdentity.Models;
 using CustomIdentity.ViewModels;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 
 namespace CustomIdentity.Controllers
 {
-    public class AccountController : Controller
+    public class AccountController(SignInManager<AppUser> signInManager, UserManager<AppUser> userManager) : Controller
     {
 
-        private readonly SignInManager<AppUser> signInManager;
-        private readonly UserManager<AppUser> userManager;
+        private readonly SignInManager<AppUser> _signInManager = signInManager;
+        private readonly UserManager<AppUser> _userManager = userManager;
 
-        public AccountController(SignInManager<AppUser> signInManager, UserManager<AppUser> userManager)
+        [HttpGet]
+        public async Task<IActionResult> Login(string? returnUrl = null)
         {
-            this.signInManager = signInManager;
-            this.userManager = userManager;
-        }
-
-        public IActionResult Login()
-        {
+            var user = await _userManager.GetUserAsync(HttpContext.User);
+            if (user != null)
+            {
+                return RedirectToAction("Index", "Home");
+            }
+            ViewData["ReturnUrl"] = returnUrl;
             return View();
         }
-        [HttpPost]
-        public async Task<IActionResult> Login (LoginVM model)
-        {
-            if (ModelState.IsValid)
-            {
-                //LOGIN
-                var result = await signInManager.PasswordSignInAsync(model.Username!, model.Password!, model.RememberMe, false);
-                if (result.Succeeded) 
-                {
-                    return RedirectToAction("Index", "Home");
 
-                }
-                ModelState.AddModelError("", "Invalid login attemp!");
+        [HttpPost]
+        public async Task<IActionResult> Login(LoginVM model, string? returnUrl = null)
+        {
+            ViewData["ReturnUrl"] = returnUrl;
+
+            if (!ModelState.IsValid)
+            {
                 return View(model);
             }
-            return View(model);
-        }
-        public IActionResult Register()
-        {
-            return View();
-        }
 
-        [HttpPost]
-        public async Task<IActionResult> Register(RegisterVM model)
-        {
-            if (ModelState.IsValid)
+            var result = await _signInManager.PasswordSignInAsync(model.Username!, model.Password!, model.RememberMe, false);
+            if (result.Succeeded)
             {
-                AppUser user = new()
+                if (!string.IsNullOrEmpty(returnUrl) && Url.IsLocalUrl(returnUrl))
                 {
-                    Name = model.Name,
-                    UserName = model.Email,
-                    Email = model.Email,
-                    Address = model.Address,
-                };
-                var result = await userManager.CreateAsync(user, model.Password);
-
-                if (result.Succeeded)
-                {
-                    await signInManager.SignInAsync(user,false);
-
-                    return RedirectToAction("Index", "Home");
+                    return Redirect(returnUrl);
                 }
-                foreach(var error in result.Errors)
-                {
-                    ModelState.AddModelError("", error.Description);
-                }
+                return RedirectToAction("Index", "Home");
             }
-            return View(model);
+            else
+            {
+                ModelState.AddModelError("", "Invalid login attempt!");
+                return View(model);
+            }
+
+
+            //if (ModelState.IsValid)
+            //{
+            //    //LOGIN
+            //    var result = await signInManager.PasswordSignInAsync(model.Username!, model.Password!, model.RememberMe, false);
+            //    if (result.Succeeded)
+            //    {
+            //        return RedirectToAction("Index", "Home");
+
+            //    }
+            //    ModelState.AddModelError("", "Invalid login attemp!");
+            //    return View(model);
+            //}
+            //return View(model);
         }
+
+
+
+        //        public IActionResult Register()
+        //        {
+        //            return View();
+        //        }
+
+        //        [HttpPost]
+        //        public async Task<IActionResult> Register(RegisterVM model)
+        //        {
+        //            if (ModelState.IsValid)
+        //            {
+        //                AppUser user = new()
+        //                {
+        //                    Name = model.Name,
+        //                    UserName = model.Email,
+        //                    Email = model.Email,
+        //                    Address = model.Address,
+        //                };
+        //                var result = await userManager.CreateAsync(user, model.Password);
+
+        //                if (result.Succeeded)
+        //                {
+        //                    await signInManager.SignInAsync(user,false);
+
+        //                    return RedirectToAction("Index", "Home");
+        //                }
+        //                foreach(var error in result.Errors)
+        //                {
+        //                    ModelState.AddModelError("", error.Description);
+        //                }
+        //            }
+        //            return View(model);
+        //        }
         public async Task<IActionResult> Logout()
         {
-            await signInManager.SignOutAsync();
+            await _signInManager.SignOutAsync();
             return RedirectToAction("Index", "Home");
         }
     }
