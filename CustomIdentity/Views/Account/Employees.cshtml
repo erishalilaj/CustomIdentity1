@@ -1,0 +1,45 @@
+﻿@model List<AppUser>
+
+@{
+    ViewData["Title"] = "Employees";
+ }
+
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>List of users</title>
+</head>
+<body>
+    <div class="d-flex">
+        <div class="align-self-end">
+            <h3>@ViewData["Title"]</h3>
+        </div>
+        <div class="ms-auto">
+            <a asp-controller="Account" asp-action="Register" class="btn btn-primary w-auto">Register</a>
+        </div>
+
+    </div>
+
+    <h1>List of users</h1>
+    <table border="1">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Email</th>
+                
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var user in Model)
+            {
+                <tr>
+                    
+                    <td>@user.Name</td>
+                    <td>@user.Email</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</body>
+</html>

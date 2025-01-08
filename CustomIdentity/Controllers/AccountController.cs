@@ -4,6 +4,8 @@ using CustomIdentity.ViewModels;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Identity.Client;
 
 namespace CustomIdentity.Controllers
 {
@@ -49,7 +51,44 @@ namespace CustomIdentity.Controllers
                 ModelState.AddModelError("", "Invalid login attempt!");
                 return View(model);
             }
+        }
 
+        [HttpGet]
+        public IActionResult Register()
+        {
+            return View();
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> Register(RegisterVM model)
+        {
+            if (ModelState.IsValid)
+            {
+                AppUser user = new()
+                {
+                    Name = model.Name,
+                    UserName = model.Email,
+                    Email = model.Email,
+                };
+                var result = await _userManager.CreateAsync(user, model.Password);
+                if (result.Succeeded)
+                {
+                    //await _signInManager.SignInAsync(user, false);
+                    return RedirectToAction("Employees", "Account");
+                }
+                foreach (var error in result.Errors)
+                {
+                    ModelState.AddModelError("", error.Description);
+                }
+            }
+            return View(model);
+        }
+        
+        public async Task<IActionResult> Employees()
+        {
+            List<AppUser> users = await _userManager.Users.ToListAsync();
+            return View(users);
+        }
 
             //if (ModelState.IsValid)
             //{
@@ -64,7 +103,7 @@ namespace CustomIdentity.Controllers
             //    return View(model);
             //}
             //return View(model);
-        }
+      
 
 
 
