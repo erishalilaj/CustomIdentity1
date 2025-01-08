@@ -21,25 +21,31 @@
 
     </div>
 
-    <h1>List of users</h1>
-    <table border="1">
+    <h4>List of users</h4>
+    <table class="table">
         <thead>
             <tr>
-                <th>Name</th>
-                <th>Email</th>
+                <th scope="col">#</th>
+                <th scope="col">Name</th>
+                <th scope="col">Email</th>
                 
             </tr>
         </thead>
         <tbody>
+             @if (Model != null)
+        {
+            int index = 1;
             @foreach (var user in Model)
             {
                 <tr>
-                    
+                    <th scope="row">@index</th>
                     <td>@user.Name</td>
                     <td>@user.Email</td>
                 </tr>
+		    
+                index++;
             }
-        </tbody>
+        }
     </table>
 </body>
 </html>
