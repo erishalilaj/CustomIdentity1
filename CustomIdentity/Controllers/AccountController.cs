@@ -83,7 +83,7 @@ namespace CustomIdentity.Controllers
             }
             return View(model);
         }
-        
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Employees()
         {
             List<AppUser> users = await _userManager.Users.ToListAsync();
@@ -139,6 +139,7 @@ namespace CustomIdentity.Controllers
         //            }
         //            return View(model);
         //        }
+
         public async Task<IActionResult> Logout()
         {
             await _signInManager.SignOutAsync();

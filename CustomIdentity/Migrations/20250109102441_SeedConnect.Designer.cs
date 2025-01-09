@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace CustomIdentity.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20241212120813_Initial")]
-    partial class Initial
+    [Migration("20250109102441_SeedConnect")]
+    partial class SeedConnect
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
