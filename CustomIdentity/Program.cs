@@ -19,19 +19,42 @@ builder.Services.AddDbContext<AppDbContext>(
         const string ADMIN_ROLE_ID = "eba739e9-5095-4642-a475-6dc0ab9dd632";
         const string ADMIN_USER_ID = "9a3f00d0-7311-41f8-a161-ba70f65198b9";
 
-        var roleExists = context.Set<IdentityRole>().Any(r => r.Id == ADMIN_ROLE_ID);
-        if (!roleExists)
+        const string USER_ROLE_ID = "v3dd2503-9d29-4021-af0d-45ba71853639";
+        const string MANAGER_ROLE_ID = "a52c33c3-304a-4c0b-aa17-566ef3345959";
+
+        // Check if roles exist before adding them
+        if (!context.Set<IdentityRole>().Any(r => r.Id == ADMIN_ROLE_ID))
         {
             context.Set<IdentityRole>().Add(new IdentityRole
             {
                 Id = ADMIN_ROLE_ID,
                 Name = "Admin",
-                NormalizedName = "Admin".ToUpper(),
+                NormalizedName = "ADMIN"
             });
         }
 
-        var userExists = context.Set<AppUser>().Any(u => u.Id == ADMIN_USER_ID);
-        if (!userExists)
+        if (!context.Set<IdentityRole>().Any(r => r.Id == USER_ROLE_ID))
+        {
+            context.Set<IdentityRole>().Add(new IdentityRole
+            {
+                Id = USER_ROLE_ID,
+                Name = "User",
+                NormalizedName = "USER"
+            });
+        }
+
+        if (!context.Set<IdentityRole>().Any(r => r.Id == MANAGER_ROLE_ID))
+        {
+            context.Set<IdentityRole>().Add(new IdentityRole
+            {
+                Id = MANAGER_ROLE_ID,
+                Name = "Manager",
+                NormalizedName = "MANAGER"
+            });
+        }
+
+        // Check if admin user exists before adding
+        if (!context.Set<AppUser>().Any(u => u.Id == ADMIN_USER_ID))
         {
             var hasher = new PasswordHasher<AppUser>();
             context.Set<AppUser>().Add(new AppUser
@@ -39,27 +62,49 @@ builder.Services.AddDbContext<AppDbContext>(
                 Id = ADMIN_USER_ID,
                 Name = "Admin",
                 UserName = "admin@admin.com",
-                NormalizedUserName = "admin@admin.com".ToUpper(),
+                NormalizedUserName = "ADMIN@ADMIN.COM",
                 Email = "admin@admin.com",
-                NormalizedEmail = "admin@admin.com".ToUpper(),
+                NormalizedEmail = "ADMIN@ADMIN.COM",
                 EmailConfirmed = true,
                 PasswordHash = hasher.HashPassword(null, "admin@123"),
                 SecurityStamp = string.Empty
             });
         }
 
-        context.Set<IdentityUserRole<string>>().Add(new IdentityUserRole<string>
+        // Check if role assignments exist before adding
+        if (!context.Set<IdentityUserRole<string>>()
+            .Any(ur => ur.UserId == ADMIN_USER_ID && ur.RoleId == ADMIN_ROLE_ID))
         {
-            RoleId = ADMIN_ROLE_ID,
-            UserId = ADMIN_USER_ID
-        });
+            context.Set<IdentityUserRole<string>>().Add(new IdentityUserRole<string>
+            {
+                RoleId = ADMIN_ROLE_ID,
+                UserId = ADMIN_USER_ID
+            });
+        }
+
+        if (!context.Set<IdentityUserRole<string>>()
+            .Any(ur => ur.UserId == ADMIN_USER_ID && ur.RoleId == USER_ROLE_ID))
+        {
+            context.Set<IdentityUserRole<string>>().Add(new IdentityUserRole<string>
+            {
+                RoleId = USER_ROLE_ID,
+                UserId = ADMIN_USER_ID
+            });
+        }
+
+        if (!context.Set<IdentityUserRole<string>>()
+            .Any(ur => ur.UserId == ADMIN_USER_ID && ur.RoleId == MANAGER_ROLE_ID))
+        {
+            context.Set<IdentityUserRole<string>>().Add(new IdentityUserRole<string>
+            {
+                RoleId = MANAGER_ROLE_ID,
+                UserId = ADMIN_USER_ID
+            });
+        }
 
         context.SaveChanges();
-
-
     })
 );
-
 
 
 builder.Services.AddIdentity<AppUser, IdentityRole>(

@@ -17,14 +17,14 @@ namespace CustomIdentity.Data
             base.OnModelCreating(modelBuilder);
             //modelBuilder.Seed();
 
-            //const string SUPER_ADMIN_ROLE_ID = "a52c33c3-304a-4c0b-aa17-566ef3345959";
-            
+            const string ADMIN_ROLE_ID = "eba739e9-5095-4642-a475-6dc0ab9dd632";
 
-            //foreach (var foreignKey in modelBuilder.Model.GetEntityTypes()
-            //    .SelectMany(e => e.GetForeignKeys()))
-            //{
-            //    foreignKey.DeleteBehavior = DeleteBehavior.Restrict;
-            //}
+
+            foreach (var foreignKey in modelBuilder.Model.GetEntityTypes()
+                .SelectMany(e => e.GetForeignKeys()))
+            {
+                foreignKey.DeleteBehavior = DeleteBehavior.Restrict;
+            }
         }
     }
 }
