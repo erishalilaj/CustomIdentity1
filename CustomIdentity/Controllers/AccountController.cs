@@ -1,4 +1,5 @@
-﻿using AspNetCoreGeneratedDocument;
+﻿using System.Data;
+using AspNetCoreGeneratedDocument;
 using CustomIdentity.Models;
 using CustomIdentity.ViewModels;
 using Microsoft.AspNetCore.Authorization;
@@ -9,11 +10,13 @@ using Microsoft.Identity.Client;
 
 namespace CustomIdentity.Controllers
 {
-    public class AccountController(SignInManager<AppUser> signInManager, UserManager<AppUser> userManager) : Controller
+    public class AccountController(SignInManager<AppUser> signInManager, UserManager<AppUser> userManager, RoleManager<IdentityRole> roleManager) : Controller
     {
 
         private readonly SignInManager<AppUser> _signInManager = signInManager;
         private readonly UserManager<AppUser> _userManager = userManager;
+        private readonly RoleManager<IdentityRole> _roleManager = roleManager;
+
 
         [HttpGet]
         public async Task<IActionResult> Login(string? returnUrl = null)
@@ -53,14 +56,14 @@ namespace CustomIdentity.Controllers
             }
         }
 
-        [HttpGet]
+        [Authorize(Roles = "Admin,Manager")]
         public IActionResult Register()
         {
             return View();
         }
 
         [HttpPost]
-        public async Task<IActionResult> Register(RegisterVM model)
+        public async Task<IActionResult> Register(RegisterVM model, string? role = null)
         {
             if (ModelState.IsValid)
             {
@@ -70,22 +73,49 @@ namespace CustomIdentity.Controllers
                     UserName = model.Email,
                     Email = model.Email,
                 };
-                var result = await _userManager.CreateAsync(user, model.Password);
+                var result = await _userManager.CreateAsync((AppUser)user, model.Password);
+
                 if (result.Succeeded)
                 {
-                    //await _signInManager.SignInAsync(user, false);
-                    return RedirectToAction("Employees", "Account");
+                    // Assign the selected role
+                    if (!string.IsNullOrEmpty(role) && await _roleManager.RoleExistsAsync(role))
+                    {
+                        await _userManager.AddToRoleAsync((AppUser)user, role);
+                    }
+
+                    //// Automatically log the user in after registration
+                    //await _signInManager.SignInAsync((AppUser)user, isPersistent: false);
+                    return RedirectToAction("Index", "Home");  // Redirect to home page
                 }
+
                 foreach (var error in result.Errors)
                 {
-                    ModelState.AddModelError("", error.Description);
+                    ModelState.AddModelError(string.Empty, error.Description);
                 }
             }
+
             return View(model);
         }
-        [Authorize(Roles = "Admin")]
+        //        var result = await _userManager.CreateAsync(user, model.Password);
+        //        if (result.Succeeded)
+        //        {
+        //            //await _signInManager.SignInAsync(user, false);
+        //            return RedirectToAction("Employees", "Account");
+        //        }
+        //        foreach (var error in result.Errors)
+        //        {
+        //            ModelState.AddModelError("", error.Description);
+        //        }
+        //    }
+        //    return View(model);
+        //}
         public async Task<IActionResult> Employees()
         {
+            var user = await _userManager.GetUserAsync(User);
+            var roles = await _userManager.GetRolesAsync(user);
+
+            ViewBag.UserRole = roles.FirstOrDefault();
+
             List<AppUser> users = await _userManager.Users.ToListAsync();
             return View(users);
         }

@@ -18,7 +18,6 @@ namespace CustomIdentity.ViewModels
         public string ConfirmPassword { get; set; }
         //[DataType(DataType.MultilineText)]
         //public string Address { get; set; }
-   
     }
 
 }

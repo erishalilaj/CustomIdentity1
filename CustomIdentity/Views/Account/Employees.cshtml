@@ -2,6 +2,7 @@
 
 @{
     ViewData["Title"] = "Employees";
+    string userRole = ViewBag.UserRole;
  }
 
 
@@ -16,12 +17,15 @@
             <h3>@ViewData["Title"]</h3>
         </div>
         <div class="ms-auto">
-            <a asp-controller="Account" asp-action="Register" class="btn btn-primary w-auto">Register</a>
+            @if (userRole == "Admin" || userRole == "Manager")
+            {
+                <a asp-controller="Account" asp-action="Register" class="btn btn-primary w-auto">Register</a>
+            }
         </div>
 
     </div>
 
-    <h4>List of users</h4>
+    <h>List of users</h>
     <table class="table">
         <thead>
             <tr>
